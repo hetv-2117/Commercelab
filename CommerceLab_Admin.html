@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>CommerceLab — Admin Panel</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#050508;
+  --surface:rgba(255,255,255,.05);
+  --surface2:rgba(255,255,255,.09);
+  --surface3:rgba(255,255,255,.14);
+  --border:rgba(255,255,255,.1);
+  --border2:rgba(255,255,255,.2);
+  --text:#f0f0f0;
+  --text2:#a0a0a0;
+  --text3:#555;
+  --accent:#e0e0e0;
+  --green:#34d399;--green-l:rgba(52,211,153,.14);--green-bdr:rgba(52,211,153,.35);
+  --red:#f87171;  --red-l:rgba(248,113,113,.14);  --red-bdr:rgba(248,113,113,.35);
+  --yellow:#fbbf24;--yellow-l:rgba(251,191,36,.14);--yellow-bdr:rgba(251,191,36,.35);
+  --blue:#60a5fa;  --blue-l:rgba(96,165,250,.14);   --blue-bdr:rgba(96,165,250,.35);
+  --purple:#a78bfa;--purple-l:rgba(167,139,250,.14);
+  --r8:8px;--r12:12px;--r16:16px;--r20:20px;--rfull:999px;
+  --ff:'Segoe UI',system-ui,-apple-system,sans-serif;
+  --s1:0 2px 12px rgba(0,0,0,.4);--s2:0 4px 24px rgba(0,0,0,.55);
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--ff);overflow:hidden}
+button{cursor:pointer;font-family:var(--ff);border:none;background:none;color:inherit}
+input,textarea,select{font-family:var(--ff)}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+
+/* ── LAYOUT ── */
+#app{display:flex;height:100vh;overflow:hidden}
+#sidebar{width:220px;flex-shrink:0;background:rgba(255,255,255,.03);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:0;overflow:hidden;transition:width .2s}
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── SIDEBAR ── */
+.sb-brand{padding:20px 16px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.sb-logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#222,#444);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.sb-brand-txt{font-size:14px;font-weight:700;line-height:1.2}
+.sb-brand-sub{font-size:10px;color:var(--text3);margin-top:2px}
+.sb-nav{flex:1;padding:10px 8px;overflow-y:auto;display:flex;flex-direction:column;gap:2px}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--r8);cursor:pointer;transition:all .15s;font-size:13px;color:var(--text2);font-weight:500}
+.sb-item:hover{background:var(--surface2);color:var(--text)}
+.sb-item.active{background:var(--surface3);color:var(--text);font-weight:700}
+.sb-item .si-ico{font-size:16px;width:22px;text-align:center;flex-shrink:0}
+.sb-item .si-badge{margin-left:auto;background:var(--red);color:#fff;border-radius:99px;font-size:9px;font-weight:800;padding:2px 6px;min-width:18px;text-align:center}
+.sb-sep{height:1px;background:var(--border);margin:6px 8px}
+.sb-footer{padding:10px 8px 16px;border-top:1px solid var(--border);font-size:11px;color:var(--text3)}
+
+/* ── TOP BAR ── */
+#topbar{height:52px;flex-shrink:0;background:rgba(0,0,0,.4);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px}
+.tb-title{font-size:16px;font-weight:700;flex:1}
+.tb-btn{padding:7px 14px;border-radius:var(--r8);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;border:1.5px solid var(--border)}
+.tb-btn:hover{border-color:var(--border2);background:var(--surface2)}
+.tb-btn.primary{background:linear-gradient(135deg,#1a1a1a,#333);border-color:rgba(255,255,255,.18);color:#fff}
+.tb-status{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)}
+.tb-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── PAGES ── */
+.page{flex:1;overflow-y:auto;padding:20px;display:none;flex-direction:column;gap:16px}
+.page.active{display:flex}
+
+/* ── STAT CARDS ── */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stat-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r16);padding:16px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;opacity:.06;background:white}
+.sc-label{font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.6px}
+.sc-val{font-size:28px;font-weight:800;margin:6px 0 2px;line-height:1}
+.sc-sub{font-size:11px;color:var(--text3)}
+.sc-ico{position:absolute;top:14px;right:14px;font-size:22px;opacity:.7}
+
+/* ── TABLE ── */
+.table-wrap{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r16);overflow:hidden}
+.table-header{padding:14px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.th-title{font-size:14px;font-weight:700;flex:1}
+table{width:100%;border-collapse:collapse}
+thead th{padding:10px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;background:rgba(255,255,255,.03);border-bottom:1px solid var(--border)}
+tbody tr{border-bottom:1px solid var(--border);transition:background .12s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:rgba(255,255,255,.03)}
+td{padding:12px 14px;font-size:13px;vertical-align:middle}
+.td-name{font-weight:600}
+.td-email{color:var(--text2);font-size:12px}
+.td-meta{font-size:11px;color:var(--text3)}
+.td-actions{display:flex;gap:6px;align-items:center}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:var(--rfull);font-size:10px;font-weight:700;letter-spacing:.3px}
+.badge-pending{background:var(--yellow-l);color:var(--yellow);border:1px solid var(--yellow-bdr)}
+.badge-approved{background:var(--green-l);color:var(--green);border:1px solid var(--green-bdr)}
+.badge-blocked{background:var(--red-l);color:var(--red);border:1px solid var(--red-bdr)}
+.badge-paid{background:var(--blue-l);color:var(--blue);border:1px solid var(--blue-bdr)}
+.badge-unpaid{background:var(--surface2);color:var(--text3);border:1px solid var(--border)}
+
+/* ── ACTION BUTTONS ── */
+.act-btn{padding:5px 11px;border-radius:var(--r8);font-size:11px;font-weight:700;border:1.5px solid;cursor:pointer;transition:all .15s;font-family:var(--ff)}
+.act-btn:active{transform:scale(.96)}
+.btn-approve{border-color:var(--green-bdr);color:var(--green);background:var(--green-l)}
+.btn-approve:hover{background:rgba(52,211,153,.25)}
+.btn-reject{border-color:var(--red-bdr);color:var(--red);background:var(--red-l)}
+.btn-reject:hover{background:rgba(248,113,113,.25)}
+.btn-block{border-color:var(--yellow-bdr);color:var(--yellow);background:var(--yellow-l)}
+.btn-unblock{border-color:var(--green-bdr);color:var(--green);background:var(--green-l)}
+.btn-view{border-color:var(--border2);color:var(--text2);background:var(--surface2)}
+.btn-pay{border-color:var(--blue-bdr);color:var(--blue);background:var(--blue-l)}
+
+/* ── SEARCH & FILTER ── */
+.filter-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.search-inp{background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r8);padding:8px 12px 8px 32px;font-size:13px;color:var(--text);outline:none;flex:1;min-width:200px;position:relative}
+.search-wrap{position:relative;flex:1;min-width:200px}
+.search-wrap::before{content:'🔍';position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none}
+.search-inp:focus{border-color:var(--border2)}
+.filter-chip{padding:7px 14px;border-radius:var(--rfull);font-size:11px;font-weight:700;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);cursor:pointer;transition:all .15s;white-space:nowrap;font-family:var(--ff)}
+.filter-chip.active{background:var(--surface3);color:var(--text);border-color:var(--border2)}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:#0d0d0f;border:1.5px solid var(--border2);border-radius:var(--r20);padding:24px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;box-shadow:var(--s2)}
+.modal-title{font-size:17px;font-weight:800;margin-bottom:4px}
+.modal-sub{font-size:12px;color:var(--text3);margin-bottom:18px}
+.modal-close{float:right;font-size:20px;cursor:pointer;color:var(--text3);margin-top:-4px}
+.modal-close:hover{color:var(--text)}
+.form-row{margin-bottom:14px}
+.form-lbl{font-size:11px;color:var(--text3);font-weight:600;margin-bottom:5px}
+.form-inp{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r8);padding:10px 12px;font-size:13px;color:var(--text);outline:none}
+.form-inp:focus{border-color:var(--border2)}
+textarea.form-inp{resize:vertical;min-height:80px}
+.modal-btns{display:flex;gap:10px;margin-top:18px}
+.modal-btn{flex:1;padding:11px;border-radius:var(--r12);font-size:13px;font-weight:700;cursor:pointer;border:1.5px solid;transition:all .15s;font-family:var(--ff)}
+.modal-btn-primary{background:linear-gradient(135deg,#1a1a1a,#333);border-color:rgba(255,255,255,.18);color:#fff}
+.modal-btn-ghost{background:transparent;border-color:var(--border);color:var(--text2)}
+.modal-btn:active{transform:scale(.97)}
+
+/* ── USER DETAIL ── */
+.ud-row{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}
+.ud-row:last-child{border:none}
+.ud-key{font-size:11px;color:var(--text3);width:100px;flex-shrink:0;padding-top:2px;font-weight:600}
+.ud-val{font-size:13px;color:var(--text);flex:1;word-break:break-all}
+
+/* ── NOTIF COMPOSER ── */
+.notif-type-row{display:flex;gap:8px;margin-bottom:14px}
+.nt-btn{flex:1;padding:8px;border-radius:var(--r8);font-size:12px;font-weight:700;border:1.5px solid var(--border);background:var(--surface);color:var(--text2);cursor:pointer;transition:all .15s;font-family:var(--ff);text-align:center}
+.nt-btn.active{border-color:var(--blue-bdr);background:var(--blue-l);color:var(--blue)}
+
+/* ── ACTIVITY FEED ── */
+.activity-item{display:flex;align-items:flex-start;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border)}
+.activity-item:last-child{border:none}
+.ai-ico{width:32px;height:32px;border-radius:var(--r8);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.ai-msg{font-size:12px;color:var(--text2);line-height:1.5;flex:1}
+.ai-msg strong{color:var(--text)}
+.ai-time{font-size:10px;color:var(--text3);margin-top:3px}
+
+/* ── LOGIN SCREEN ── */
+#login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:0}
+.login-box{background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--r20);padding:32px 28px;width:100%;max-width:380px;box-shadow:var(--s2)}
+.login-logo{text-align:center;margin-bottom:22px}
+.login-logo-ico{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#1a1a1a,#333);border:1px solid var(--border2);display:inline-flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:10px}
+.login-title{font-size:20px;font-weight:800;text-align:center}
+.login-sub{font-size:12px;color:var(--text3);text-align:center;margin-top:4px;margin-bottom:24px}
+.login-btn{width:100%;padding:13px;border-radius:var(--r12);background:linear-gradient(135deg,#1a1a1a,#333);border:1.5px solid rgba(255,255,255,.18);color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-top:14px;font-family:var(--ff);transition:all .15s}
+.login-btn:active{transform:scale(.97)}
+.login-err{color:var(--red);font-size:12px;text-align:center;margin-top:10px;min-height:18px}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:24px;right:24px;background:#1a1a1a;border:1px solid var(--border2);border-radius:var(--r12);padding:12px 16px;font-size:13px;color:var(--text);box-shadow:var(--s2);z-index:9999;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;max-width:320px}
+#toast.show{opacity:1;transform:translateY(0)}
+
+/* ── EMPTY STATE ── */
+.empty-state{text-align:center;padding:48px 20px;color:var(--text3)}
+.empty-state-ico{font-size:40px;margin-bottom:12px}
+.empty-state-txt{font-size:14px}
+.empty-state-sub{font-size:12px;margin-top:4px}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  #sidebar{width:52px}
+  .sb-brand-txt,.sb-brand-sub,.si-txt,.si-badge{display:none}
+  .sb-item{padding:10px;justify-content:center}
+  .sb-item .si-ico{margin:0}
+  .stat-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:600px){
+  #sidebar{display:none}
+  .stat-grid{grid-template-columns:1fr}
+  table{font-size:12px}
+  td,th{padding:8px 10px}
+}
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN SCREEN ── -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-logo-ico">🛡️</div>
+      <div class="login-title">Admin Panel</div>
+      <div class="login-sub">CommerceLab · Restricted Access</div>
+    </div>
+    <div class="form-row">
+      <div class="form-lbl">Admin Password</div>
+      <input class="form-inp" id="login-pass" type="password" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')doAdminLogin()"/>
+    </div>
+    <button class="login-btn" onclick="doAdminLogin()">🔐 Enter Admin Panel</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+  <div style="margin-top:16px;font-size:11px;color:var(--text3)">⚙️ Set your password in the ADMIN_PASSWORD variable below</div>
+</div>
+
+<!-- ── MAIN APP ── -->
+<div id="app" style="display:none">
+
+  <!-- SIDEBAR -->
+  <div id="sidebar">
+    <div class="sb-brand">
+      <div class="sb-logo">📊</div>
+      <div class="sb-brand-txt">CommerceLab <div class="sb-brand-sub">Admin Panel</div></div>
+    </div>
+    <div class="sb-nav">
+      <div class="sb-item active" onclick="showPage('dashboard')" id="nav-dashboard">
+        <span class="si-ico">🏠</span><span class="si-txt">Dashboard</span>
+      </div>
+      <div class="sb-item" onclick="showPage('users')" id="nav-users">
+        <span class="si-ico">👥</span><span class="si-txt">All Users</span>
+        <span class="si-badge" id="pending-badge" style="display:none">0</span>
+      </div>
+      <div class="sb-item" onclick="showPage('pending')" id="nav-pending">
+        <span class="si-ico">⏳</span><span class="si-txt">Pending</span>
+        <span class="si-badge" id="pending-badge2">0</span>
+      </div>
+      <div class="sb-sep"></div>
+      <div class="sb-item" onclick="showPage('notifications')" id="nav-notifications">
+        <span class="si-ico">🔔</span><span class="si-txt">Send Notification</span>
+      </div>
+      <div class="sb-item" onclick="showPage('activity')" id="nav-activity">
+        <span class="si-ico">📋</span><span class="si-txt">Activity Log</span>
+      </div>
+      <div class="sb-sep"></div>
+      <div class="sb-item" onclick="exportCSV()">
+        <span class="si-ico">📥</span><span class="si-txt">Export CSV</span>
+      </div>
+      <div class="sb-item" onclick="doLogout()" style="color:var(--red)">
+        <span class="si-ico">🚪</span><span class="si-txt">Logout</span>
+      </div>
+    </div>
+    <div class="sb-footer">
+      <div id="sb-firebase-status">🔴 Not connected</div>
+      <div style="margin-top:4px" id="sb-user-count">0 users</div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div id="main">
+    <!-- TOP BAR -->
+    <div id="topbar">
+      <div class="tb-title" id="page-title">Dashboard</div>
+      <div class="tb-status">
+        <div class="tb-dot"></div>
+        <span id="tb-status-txt">Live</span>
+      </div>
+      <button class="tb-btn" onclick="refreshData()">🔄 Refresh</button>
+      <button class="tb-btn primary" onclick="openNotifModal()">📢 Notify All</button>
+    </div>
+
+    <!-- DASHBOARD PAGE -->
+    <div class="page active" id="page-dashboard">
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="sc-label">Total Users</div>
+          <div class="sc-val" id="stat-total">0</div>
+          <div class="sc-sub">All registered</div>
+          <div class="sc-ico">👥</div>
+        </div>
+        <div class="stat-card" style="border-color:var(--yellow-bdr)">
+          <div class="sc-label">Pending Approval</div>
+          <div class="sc-val" id="stat-pending" style="color:var(--yellow)">0</div>
+          <div class="sc-sub">Awaiting review</div>
+          <div class="sc-ico">⏳</div>
+        </div>
+        <div class="stat-card" style="border-color:var(--green-bdr)">
+          <div class="sc-label">Approved</div>
+          <div class="sc-val" id="stat-approved" style="color:var(--green)">0</div>
+          <div class="sc-sub">Active users</div>
+          <div class="sc-ico">✅</div>
+        </div>
+        <div class="stat-card" style="border-color:var(--red-bdr)">
+          <div class="sc-label">Blocked</div>
+          <div class="sc-val" id="stat-blocked" style="color:var(--red)">0</div>
+          <div class="sc-sub">Access revoked</div>
+          <div class="sc-ico">🚫</div>
+        </div>
+      </div>
+
+      <!-- Quick pending approvals -->
+      <div class="table-wrap">
+        <div class="table-header">
+          <div class="th-title">⏳ Pending Approvals</div>
+          <button class="tb-btn" onclick="showPage('pending')">View All →</button>
+        </div>
+        <div id="dash-pending-list">
+          <div class="empty-state"><div class="empty-state-ico">🎉</div><div class="empty-state-txt">No pending approvals</div></div>
+        </div>
+      </div>
+
+      <!-- Recent activity -->
+      <div class="table-wrap">
+        <div class="table-header">
+          <div class="th-title">📋 Recent Activity</div>
+        </div>
+        <div id="dash-activity" style="max-height:280px;overflow-y:auto">
+          <div class="empty-state"><div class="empty-state-ico">📭</div><div class="empty-state-txt">No activity yet</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALL USERS PAGE -->
+    <div class="page" id="page-users">
+      <div class="filter-row">
+        <div class="search-wrap">
+          <input class="search-inp" id="user-search" placeholder="Search name, email, phone, school…" oninput="renderUsersTable()"/>
+        </div>
+        <button class="filter-chip active" id="fc-all" onclick="setFilter('all',this)">All</button>
+        <button class="filter-chip" id="fc-approved" onclick="setFilter('approved',this)">✅ Approved</button>
+        <button class="filter-chip" id="fc-pending" onclick="setFilter('pending',this)">⏳ Pending</button>
+        <button class="filter-chip" id="fc-blocked" onclick="setFilter('blocked',this)">🚫 Blocked</button>
+        <button class="filter-chip" id="fc-paid" onclick="setFilter('paid',this)">💰 Paid</button>
+        <button class="tb-btn" onclick="exportCSV()">📥 CSV</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>Name</th><th>Contact</th><th>Class / School</th>
+              <th>Status</th><th>Payment</th><th>Registered</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="users-tbody">
+            <tr><td colspan="8"><div class="empty-state"><div class="empty-state-ico">⏳</div><div class="empty-state-txt">Loading users…</div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PENDING PAGE -->
+    <div class="page" id="page-pending">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div style="font-size:13px;color:var(--text2);flex:1">Review each signup and approve or reject access.</div>
+        <button class="tb-btn primary" onclick="approveAll()" style="font-size:12px">✅ Approve All Pending</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>#</th><th>Name</th><th>Contact</th><th>Class / School</th><th>Registered</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="pending-tbody">
+            <tr><td colspan="6"><div class="empty-state"><div class="empty-state-ico">🎉</div><div class="empty-state-txt">No pending approvals!</div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS PAGE -->
+    <div class="page" id="page-notifications">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+
+        <!-- Compose -->
+        <div class="table-wrap" style="padding:20px">
+          <div style="font-size:15px;font-weight:700;margin-bottom:4px">📢 Send Notification</div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:16px">Push a message to student app(s) — they see it as a banner</div>
+
+          <div class="notif-type-row">
+            <button class="nt-btn active" id="nt-all" onclick="setNotifTarget('all',this)">📣 All Users</button>
+            <button class="nt-btn" id="nt-approved" onclick="setNotifTarget('approved',this)">✅ Approved Only</button>
+            <button class="nt-btn" id="nt-user" onclick="setNotifTarget('user',this)">👤 One User</button>
+          </div>
+
+          <div class="form-row" id="notif-uid-row" style="display:none">
+            <div class="form-lbl">Target User (UID or Email)</div>
+            <input class="form-inp" id="notif-uid" placeholder="Paste user UID or email…"/>
+          </div>
+          <div class="form-row">
+            <div class="form-lbl">Notification Type</div>
+            <select class="form-inp" id="notif-type">
+              <option value="update">📦 App Update</option>
+              <option value="announcement">📣 Announcement</option>
+              <option value="payment">💰 Payment Reminder</option>
+              <option value="maintenance">🔧 Maintenance</option>
+              <option value="custom">💬 Custom Message</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-lbl">Title</div>
+            <input class="form-inp" id="notif-title" placeholder="e.g. New Update Available!" maxlength="80"/>
+          </div>
+          <div class="form-row">
+            <div class="form-lbl">Message</div>
+            <textarea class="form-inp" id="notif-msg" placeholder="Write your message here…" rows="4" maxlength="500"></textarea>
+          </div>
+          <button class="login-btn" onclick="sendNotification()" style="margin-top:0">🚀 Send Notification</button>
+        </div>
+
+        <!-- Notification History -->
+        <div class="table-wrap">
+          <div class="table-header">
+            <div class="th-title">📜 Sent Notifications</div>
+            <button class="tb-btn" onclick="loadNotifHistory()">🔄</button>
+          </div>
+          <div id="notif-history" style="max-height:480px;overflow-y:auto">
+            <div class="empty-state"><div class="empty-state-ico">📭</div><div class="empty-state-txt">No notifications sent yet</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIVITY PAGE -->
+    <div class="page" id="page-activity">
+      <div class="table-wrap">
+        <div class="table-header">
+          <div class="th-title">📋 Full Activity Log</div>
+          <button class="tb-btn" onclick="clearActivity()">🗑 Clear</button>
+        </div>
+        <div id="activity-log" style="max-height:calc(100vh - 180px);overflow-y:auto">
+          <div class="empty-state"><div class="empty-state-ico">📭</div><div class="empty-state-txt">No activity yet</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- USER DETAIL MODAL -->
+<div class="modal-overlay" id="user-modal" onclick="if(event.target===this)closeModal('user-modal')">
+  <div class="modal">
+    <div class="modal-close" onclick="closeModal('user-modal')">✕</div>
+    <div class="modal-title" id="um-name">User Details</div>
+    <div class="modal-sub" id="um-uid"></div>
+    <div id="um-rows"></div>
+    <div style="margin-top:14px">
+      <div class="form-lbl">Admin Notes</div>
+      <textarea class="form-inp" id="um-notes" placeholder="Add private notes about this user…" rows="3"></textarea>
+    </div>
+    <div class="modal-btns" id="um-action-btns" style="flex-wrap:wrap;gap:8px"></div>
+  </div>
+</div>
+
+<!-- SEND NOTIFICATION MODAL (quick) -->
+<div class="modal-overlay" id="notif-modal" onclick="if(event.target===this)closeModal('notif-modal')">
+  <div class="modal">
+    <div class="modal-close" onclick="closeModal('notif-modal')">✕</div>
+    <div class="modal-title">📢 Broadcast to All Users</div>
+    <div class="modal-sub">Instantly notify everyone using CommerceLab</div>
+    <div class="form-row">
+      <div class="form-lbl">Title</div>
+      <input class="form-inp" id="qn-title" placeholder="e.g. New chapters added!"/>
+    </div>
+    <div class="form-row">
+      <div class="form-lbl">Message</div>
+      <textarea class="form-inp" id="qn-msg" placeholder="What do you want to tell your students?" rows="3"></textarea>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-btn modal-btn-ghost" onclick="closeModal('notif-modal')">Cancel</button>
+      <button class="modal-btn modal-btn-primary" onclick="sendQuickNotif()">🚀 Send to All</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script type="module">
+// ═══════════════════════════════════════════════════════════════════
+//  ██ CommerceLab ADMIN PANEL ██
+//  Configure your Firebase below, then replace ADMIN_PASSWORD
+// ═══════════════════════════════════════════════════════════════════
+
+// ─── 🔐 SET YOUR ADMIN PASSWORD HERE ─────────────────────────────
+// Student app live URL: https://hetv-0051.github.io/Commercelab/
+const ADMIN_PASSWORD = "hetv_@(2269)";   // ← CHANGE THIS
+
+// ─── 🔥 FIREBASE CONFIG — commercelab-2269 ──────────────
+const firebaseConfig = {
+  apiKey:            "AIzaSyCclY4r0R1a99GhKsM_oOg672oSup_8xBw",
+  authDomain:        "commercelab-2269.firebaseapp.com",
+  databaseURL:       "https://commercelab-2269-default-rtdb.firebaseio.com",
+  projectId:         "commercelab-2269",
+  storageBucket:     "commercelab-2269.firebasestorage.app",
+  messagingSenderId: "34010836169",
+  appId:             "1:34010836169:web:410ad9650fd9e80d973118",
+  measurementId:     "G-XHL7D9G66W"
+};
+// ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────
+
+import { initializeApp }              from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, set, update, push, remove, get }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+// ── GLOBALS ──────────────────────────────────────────────────────
+let db = null;
+let allUsers = {};           // uid → user object
+let activityLog = [];
+let currentFilter = 'all';
+let currentNotifTarget = 'all';
+let isConnected = false;
+let selectedUID = null;
+
+// ── LOGIN ─────────────────────────────────────────────────────────
+window.doAdminLogin = function() {
+  const pass = document.getElementById('login-pass').value;
+  if (pass === ADMIN_PASSWORD) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    initFirebase();
+  } else {
+    const err = document.getElementById('login-err');
+    err.textContent = '❌ Incorrect password. Try again.';
+    setTimeout(() => err.textContent = '', 3000);
+  }
+};
+
+window.doLogout = function() {
+  if (!confirm('Log out of admin panel?')) return;
+  location.reload();
+};
+
+// ── FIREBASE INIT ─────────────────────────────────────────────────
+function initFirebase() {
+  try {
+    const app = initializeApp(firebaseConfig);
+    db = getDatabase(app);
+
+    // Connection state
+    const connRef = ref(db, '.info/connected');
+    onValue(connRef, snap => {
+      isConnected = snap.val() === true;
+      document.getElementById('tb-status-txt').textContent = isConnected ? 'Live' : 'Offline';
+      document.getElementById('sb-firebase-status').textContent = isConnected ? '🟢 Connected' : '🔴 Disconnected';
+      const dot = document.querySelector('.tb-dot');
+      if (dot) dot.style.background = isConnected ? 'var(--green)' : 'var(--red)';
+    });
+
+    // Listen to all users in real-time
+    const usersRef = ref(db, 'users');
+    onValue(usersRef, snap => {
+      allUsers = snap.val() || {};
+      refreshAllUI();
+      checkNewPendingUsers();
+    });
+
+    toast('🔥 Firebase connected!', 'success');
+  } catch (e) {
+    toast('❌ Firebase error: ' + e.message, 'error');
+    document.getElementById('sb-firebase-status').textContent = '🔴 Config error';
+  }
+}
+
+// ── UI REFRESH ────────────────────────────────────────────────────
+function refreshAllUI() {
+  updateStats();
+  renderUsersTable();
+  renderPendingTable();
+  renderDashPending();
+  updateSidebarBadges();
+  document.getElementById('sb-user-count').textContent = Object.keys(allUsers).length + ' users';
+}
+
+window.refreshData = function() {
+  if (!db) { toast('Not connected to Firebase', 'error'); return; }
+  toast('🔄 Data refreshed!');
+};
+
+// ── STATS ─────────────────────────────────────────────────────────
+function updateStats() {
+  const users = Object.values(allUsers);
+  const total    = users.length;
+  const pending  = users.filter(u => u.status === 'pending').length;
+  const approved = users.filter(u => u.status === 'approved').length;
+  const blocked  = users.filter(u => u.status === 'blocked').length;
+  setText('stat-total',    total);
+  setText('stat-pending',  pending);
+  setText('stat-approved', approved);
+  setText('stat-blocked',  blocked);
+}
+
+function updateSidebarBadges() {
+  const pending = Object.values(allUsers).filter(u => u.status === 'pending').length;
+  const pb  = document.getElementById('pending-badge');
+  const pb2 = document.getElementById('pending-badge2');
+  if (pb)  { pb.textContent  = pending; pb.style.display  = pending ? '' : 'none'; }
+  if (pb2) { pb2.textContent = pending; }
+}
+
+// ── USERS TABLE ───────────────────────────────────────────────────
+window.renderUsersTable = function() {
+  const search = (document.getElementById('user-search')?.value || '').toLowerCase();
+  let users = Object.entries(allUsers);
+
+  if (currentFilter === 'paid') {
+    users = users.filter(([, u]) => u.paymentStatus === 'paid');
+  } else if (currentFilter !== 'all') {
+    users = users.filter(([, u]) => u.status === currentFilter);
+  }
+
+  if (search) {
+    users = users.filter(([, u]) =>
+      (u.name||'').toLowerCase().includes(search) ||
+      (u.email||'').toLowerCase().includes(search) ||
+      (u.phone||'').toLowerCase().includes(search) ||
+      (u.school||'').toLowerCase().includes(search)
+    );
+  }
+
+  users.sort((a, b) => (b[1].registeredAt||0) - (a[1].registeredAt||0));
+
+  const tbody = document.getElementById('users-tbody');
+  if (!users.length) {
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="empty-state-ico">🔍</div><div class="empty-state-txt">No users found</div><div class="empty-state-sub">Try changing filters</div></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = users.map(([uid, u], i) => `
+    <tr>
+      <td style="color:var(--text3);font-size:11px">${i+1}</td>
+      <td>
+        <div class="td-name">${esc(u.name||'—')}</div>
+        <div class="td-email">${esc(u.email||'—')}</div>
+      </td>
+      <td>
+        <div style="font-size:12px">📱 ${esc(u.phone||'—')}</div>
+        <div class="td-meta">📍 ${esc(u.city||'—')}</div>
+      </td>
+      <td>
+        <div>Std ${esc(u.std||u.class||'—')}</div>
+        <div class="td-meta">${esc(u.school||'—')}</div>
+      </td>
+      <td><span class="badge badge-${u.status||'pending'}">${statusIcon(u.status)} ${cap(u.status||'pending')}</span></td>
+      <td><span class="badge badge-${u.paymentStatus==='paid'?'paid':'unpaid'}">${u.paymentStatus==='paid'?'💰 Paid':'⏸ Unpaid'}</span></td>
+      <td class="td-meta">${fmtDate(u.registeredAt)}</td>
+      <td>
+        <div class="td-actions">
+          <button class="act-btn btn-view" onclick="viewUser('${uid}')">👁 View</button>
+          ${u.status !== 'approved' ? `<button class="act-btn btn-approve" onclick="approveUser('${uid}')">✅</button>` : ''}
+          ${u.status !== 'blocked'  ? `<button class="act-btn btn-block"  onclick="blockUser('${uid}')">🚫</button>` : `<button class="act-btn btn-unblock" onclick="approveUser('${uid}')">↩️</button>`}
+          ${u.paymentStatus !== 'paid' ? `<button class="act-btn btn-pay" onclick="markPaid('${uid}')">💰</button>` : ''}
+        </div>
+      </td>
+    </tr>
+  `).join('');
+};
+
+window.setFilter = function(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderUsersTable();
+};
+
+// ── PENDING TABLE ─────────────────────────────────────────────────
+function renderPendingTable() {
+  const pending = Object.entries(allUsers).filter(([, u]) => u.status === 'pending');
+  pending.sort((a, b) => (a[1].registeredAt||0) - (b[1].registeredAt||0));
+
+  const tbody = document.getElementById('pending-tbody');
+  if (!pending.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="empty-state-ico">🎉</div><div class="empty-state-txt">No pending approvals!</div></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = pending.map(([uid, u], i) => `
+    <tr>
+      <td style="color:var(--text3);font-size:11px">${i+1}</td>
+      <td>
+        <div class="td-name">${esc(u.name||'—')}</div>
+        <div class="td-email">${esc(u.email||'—')}</div>
+      </td>
+      <td>
+        <div>📱 ${esc(u.phone||'—')}</div>
+        <div class="td-meta">📍 ${esc(u.city||'—')}</div>
+      </td>
+      <td>
+        <div>Std ${esc(u.std||u.class||'—')}</div>
+        <div class="td-meta">${esc(u.school||'—')}</div>
+      </td>
+      <td class="td-meta">${fmtDate(u.registeredAt)}</td>
+      <td>
+        <div class="td-actions">
+          <button class="act-btn btn-view"    onclick="viewUser('${uid}')">👁 View</button>
+          <button class="act-btn btn-approve" onclick="approveUser('${uid}')">✅ Approve</button>
+          <button class="act-btn btn-reject"  onclick="rejectUser('${uid}')">❌ Reject</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function renderDashPending() {
+  const pending = Object.entries(allUsers).filter(([, u]) => u.status === 'pending').slice(0, 5);
+  const el = document.getElementById('dash-pending-list');
+  if (!pending.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-state-ico">🎉</div><div class="empty-state-txt">No pending approvals</div></div>`;
+    return;
+  }
+  el.innerHTML = `<table><tbody>${pending.map(([uid, u]) => `
+    <tr>
+      <td><div class="td-name">${esc(u.name||'—')}</div><div class="td-email">${esc(u.email||'—')}</div></td>
+      <td>Std ${esc(u.std||u.class||'—')} · ${esc(u.school||'—')}</td>
+      <td class="td-meta">${fmtDate(u.registeredAt)}</td>
+      <td><div class="td-actions">
+        <button class="act-btn btn-approve" onclick="approveUser('${uid}')">✅</button>
+        <button class="act-btn btn-reject"  onclick="rejectUser('${uid}')">❌</button>
+      </div></td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+// ── USER ACTIONS ──────────────────────────────────────────────────
+window.approveUser = async function(uid) {
+  if (!db) return;
+  await update(ref(db, `users/${uid}`), { status:'approved', approvedAt: Date.now() });
+  addActivity(`✅ Approved user: ${allUsers[uid]?.name || uid}`, 'approve', uid);
+  sendNotifToUser(uid, '🎉 Access Approved!', `Hi ${allUsers[uid]?.name?.split(' ')[0]||'Student'}, your CommerceLab account has been approved! Start learning now.`);
+  toast('✅ User approved!', 'success');
+};
+
+window.rejectUser = async function(uid) {
+  if (!confirm(`Reject and delete ${allUsers[uid]?.name}? This cannot be undone.`)) return;
+  if (!db) return;
+  addActivity(`❌ Rejected user: ${allUsers[uid]?.name || uid}`, 'reject', uid);
+  await remove(ref(db, `users/${uid}`));
+  toast('❌ User rejected and removed', 'error');
+};
+
+window.blockUser = async function(uid) {
+  if (!confirm(`Block ${allUsers[uid]?.name}? They won't be able to use the app.`)) return;
+  if (!db) return;
+  await update(ref(db, `users/${uid}`), { status:'blocked', blockedAt: Date.now() });
+  addActivity(`🚫 Blocked user: ${allUsers[uid]?.name || uid}`, 'block', uid);
+  toast('🚫 User blocked');
+};
+
+window.markPaid = async function(uid) {
+  if (!db) return;
+  await update(ref(db, `users/${uid}`), { paymentStatus:'paid', paidAt: Date.now() });
+  addActivity(`💰 Marked paid: ${allUsers[uid]?.name || uid}`, 'payment', uid);
+  sendNotifToUser(uid, '💰 Payment Confirmed!', `Your payment has been received. Enjoy full access to CommerceLab!`);
+  toast('💰 Marked as paid!', 'success');
+};
+
+window.approveAll = async function() {
+  const pending = Object.entries(allUsers).filter(([, u]) => u.status === 'pending');
+  if (!pending.length) { toast('No pending users'); return; }
+  if (!confirm(`Approve all ${pending.length} pending users?`)) return;
+  for (const [uid] of pending) await approveUser(uid);
+  toast(`✅ Approved ${pending.length} users!`, 'success');
+};
+
+// ── VIEW USER ─────────────────────────────────────────────────────
+window.viewUser = function(uid) {
+  const u = allUsers[uid];
+  if (!u) return;
+  selectedUID = uid;
+  setText('um-name', u.name || 'Unknown');
+  setText('um-uid',  'UID: ' + uid);
+
+  const fields = [
+    ['Name',        u.name],
+    ['Email',       u.email],
+    ['Phone',       u.phone],
+    ['Class / Std', u.std || u.class],
+    ['School',      u.school],
+    ['City',        u.city],
+    ['Status',      `<span class="badge badge-${u.status}">${statusIcon(u.status)} ${cap(u.status)}</span>`],
+    ['Payment',     `<span class="badge badge-${u.paymentStatus==='paid'?'paid':'unpaid'}">${u.paymentStatus==='paid'?'💰 Paid':'⏸ Unpaid'}</span>`],
+    ['Registered',  fmtDate(u.registeredAt)],
+    ['Approved',    u.approvedAt ? fmtDate(u.approvedAt) : '—'],
+    ['Blocked',     u.blockedAt  ? fmtDate(u.blockedAt)  : '—'],
+    ['Last Active', u.lastActive ? fmtDate(u.lastActive) : '—'],
+    ['Device',      u.device || '—'],
+  ];
+
+  document.getElementById('um-rows').innerHTML = fields.map(([k, v]) =>
+    `<div class="ud-row"><span class="ud-key">${k}</span><span class="ud-val">${v||'—'}</span></div>`
+  ).join('');
+
+  document.getElementById('um-notes').value = u.adminNotes || '';
+
+  const btns = document.getElementById('um-action-btns');
+  btns.innerHTML = `
+    <button class="modal-btn modal-btn-ghost" onclick="saveNotes('${uid}')">💾 Save Notes</button>
+    ${u.status !== 'approved' ? `<button class="modal-btn" style="border-color:var(--green-bdr);color:var(--green);background:var(--green-l)" onclick="approveUser('${uid}');closeModal('user-modal')">✅ Approve</button>` : ''}
+    ${u.status !== 'blocked'  ? `<button class="modal-btn" style="border-color:var(--red-bdr);color:var(--red);background:var(--red-l)" onclick="blockUser('${uid}');closeModal('user-modal')">🚫 Block</button>` : `<button class="modal-btn" style="border-color:var(--green-bdr);color:var(--green)" onclick="approveUser('${uid}');closeModal('user-modal')">↩️ Unblock</button>`}
+    ${u.paymentStatus !== 'paid' ? `<button class="modal-btn" style="border-color:var(--blue-bdr);color:var(--blue);background:var(--blue-l)" onclick="markPaid('${uid}');closeModal('user-modal')">💰 Mark Paid</button>` : ''}
+    <button class="modal-btn" style="border-color:var(--blue-bdr);color:var(--blue);background:var(--blue-l)" onclick="sendNotifToUserModal('${uid}')">📲 Send Notif</button>
+  `;
+
+  openModal('user-modal');
+};
+
+window.saveNotes = async function(uid) {
+  if (!db) return;
+  const notes = document.getElementById('um-notes').value;
+  await update(ref(db, `users/${uid}`), { adminNotes: notes });
+  toast('💾 Notes saved!');
+};
+
+window.sendNotifToUserModal = function(uid) {
+  const u = allUsers[uid];
+  const title = prompt('Notification title:', `Hi ${u?.name?.split(' ')[0]||'Student'}!`);
+  if (!title) return;
+  const msg = prompt('Message:');
+  if (!msg) return;
+  sendNotifToUser(uid, title, msg);
+  toast('📲 Notification sent to user!', 'success');
+};
+
+// ── NOTIFICATIONS ─────────────────────────────────────────────────
+let notifTargetMode = 'all';
+
+window.setNotifTarget = function(target, el) {
+  notifTargetMode = target;
+  document.querySelectorAll('.nt-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('notif-uid-row').style.display = target === 'user' ? '' : 'none';
+};
+
+window.sendNotification = async function() {
+  if (!db) { toast('Not connected', 'error'); return; }
+  const title = document.getElementById('notif-title').value.trim();
+  const msg   = document.getElementById('notif-msg').value.trim();
+  const type  = document.getElementById('notif-type').value;
+  if (!title || !msg) { toast('Fill in title and message', 'error'); return; }
+
+  const notif = {
+    title, message: msg, type,
+    createdAt: Date.now(),
+    target: notifTargetMode,
+    targetUid: notifTargetMode === 'user' ? document.getElementById('notif-uid').value.trim() : null,
+    sentBy: 'admin'
+  };
+
+  await push(ref(db, 'notifications'), notif);
+  addActivity(`📢 Sent "${title}" to ${notifTargetMode}`, 'notif');
+  toast('🚀 Notification sent!', 'success');
+  document.getElementById('notif-title').value = '';
+  document.getElementById('notif-msg').value = '';
+  loadNotifHistory();
+};
+
+async function sendNotifToUser(uid, title, message) {
+  if (!db) return;
+  await push(ref(db, 'notifications'), {
+    title, message, type: 'system',
+    createdAt: Date.now(),
+    target: 'user',
+    targetUid: uid,
+    sentBy: 'admin'
+  });
+}
+
+window.sendQuickNotif = async function() {
+  if (!db) { toast('Not connected', 'error'); return; }
+  const title = document.getElementById('qn-title').value.trim();
+  const msg   = document.getElementById('qn-msg').value.trim();
+  if (!title || !msg) { toast('Fill in title and message', 'error'); return; }
+  await push(ref(db, 'notifications'), {
+    title, message: msg, type: 'announcement',
+    createdAt: Date.now(), target: 'all', sentBy: 'admin'
+  });
+  addActivity(`📢 Broadcast: "${title}"`, 'notif');
+  toast('🚀 Broadcast sent!', 'success');
+  closeModal('notif-modal');
+};
+
+window.openNotifModal = function() { openModal('notif-modal'); };
+
+window.loadNotifHistory = async function() {
+  if (!db) return;
+  const snap = await get(ref(db, 'notifications'));
+  const data = snap.val() || {};
+  const list = Object.values(data).sort((a, b) => b.createdAt - a.createdAt).slice(0, 30);
+  const el = document.getElementById('notif-history');
+  if (!list.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-state-ico">📭</div><div class="empty-state-txt">No notifications yet</div></div>`;
+    return;
+  }
+  el.innerHTML = list.map(n => `
+    <div class="activity-item">
+      <div class="ai-ico" style="background:var(--blue-l)">${notifTypeIcon(n.type)}</div>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--text)">${esc(n.title)}</div>
+        <div class="ai-msg">${esc(n.message)}</div>
+        <div class="ai-time">→ ${n.target === 'user' ? '👤 User: '+n.targetUid : '📣 '+cap(n.target)} · ${fmtDate(n.createdAt)}</div>
+      </div>
+    </div>
+  `).join('');
+};
+
+// ── ACTIVITY LOG ──────────────────────────────────────────────────
+function addActivity(msg, type = 'info', uid = null) {
+  const entry = { msg, type, uid, ts: Date.now() };
+  activityLog.unshift(entry);
+  if (activityLog.length > 100) activityLog.pop();
+  renderActivity();
+}
+
+function renderActivity() {
+  const el = document.getElementById('activity-log');
+  const dash = document.getElementById('dash-activity');
+  if (!activityLog.length) {
+    const empty = `<div class="empty-state"><div class="empty-state-ico">📭</div><div class="empty-state-txt">No activity yet</div></div>`;
+    if (el) el.innerHTML = empty;
+    if (dash) dash.innerHTML = empty;
+    return;
+  }
+  const html = activityLog.map(a => `
+    <div class="activity-item">
+      <div class="ai-ico" style="background:${activityBg(a.type)}">${activityIcon(a.type)}</div>
+      <div class="ai-msg"><strong>${esc(a.msg)}</strong><div class="ai-time">${fmtDate(a.ts)}</div></div>
+    </div>
+  `).join('');
+  if (el) el.innerHTML = html;
+  if (dash) dash.innerHTML = activityLog.slice(0,5).map(a => `
+    <div class="activity-item">
+      <div class="ai-ico" style="background:${activityBg(a.type)}">${activityIcon(a.type)}</div>
+      <div class="ai-msg"><strong>${esc(a.msg)}</strong><div class="ai-time">${fmtDate(a.ts)}</div></div>
+    </div>
+  `).join('');
+}
+
+window.clearActivity = function() {
+  activityLog = [];
+  renderActivity();
+  toast('🗑 Activity cleared');
+};
+
+// ── BROWSER NOTIFICATIONS (when new signup) ───────────────────────
+let prevUserCount = 0;
+function checkNewPendingUsers() {
+  const pending = Object.values(allUsers).filter(u => u.status === 'pending');
+  if (prevUserCount > 0 && pending.length > prevUserCount) {
+    // New signup!
+    browserNotify('🔔 New Signup!', `${pending[0]?.name || 'A student'} just signed up for CommerceLab.`);
+  }
+  prevUserCount = pending.length;
+}
+
+function browserNotify(title, body) {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'granted') {
+    new Notification(title, { body, icon: '📊' });
+  } else if (Notification.permission !== 'denied') {
+    Notification.requestPermission().then(p => {
+      if (p === 'granted') new Notification(title, { body });
+    });
+  }
+}
+
+// Request notification permission on load
+setTimeout(() => {
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+}, 2000);
+
+// ── CSV EXPORT ────────────────────────────────────────────────────
+window.exportCSV = function() {
+  const users = Object.entries(allUsers);
+  if (!users.length) { toast('No users to export'); return; }
+
+  const headers = ['UID','Name','Email','Phone','Std/Class','School','City','Status','Payment','Registered','Approved At','Notes'];
+  const rows = users.map(([uid, u]) => [
+    uid,
+    u.name||'',
+    u.email||'',
+    u.phone||'',
+    u.std||u.class||'',
+    u.school||'',
+    u.city||'',
+    u.status||'',
+    u.paymentStatus||'unpaid',
+    u.registeredAt ? new Date(u.registeredAt).toLocaleString('en-IN') : '',
+    u.approvedAt   ? new Date(u.approvedAt).toLocaleString('en-IN')   : '',
+    u.adminNotes||''
+  ].map(v => `"${String(v).replace(/"/g,'""')}"`));
+
+  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `commercelab_users_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('📥 CSV downloaded!', 'success');
+};
+
+// ── NAVIGATION ────────────────────────────────────────────────────
+window.showPage = function(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+  const pageEl = document.getElementById('page-' + page);
+  const navEl  = document.getElementById('nav-' + page);
+  if (pageEl) pageEl.classList.add('active');
+  if (navEl)  navEl.classList.add('active');
+  const titles = { dashboard:'Dashboard', users:'All Users', pending:'Pending Approvals', notifications:'Send Notification', activity:'Activity Log' };
+  setText('page-title', titles[page] || page);
+  if (page === 'notifications') loadNotifHistory();
+};
+
+// ── MODAL HELPERS ─────────────────────────────────────────────────
+window.openModal  = id => { document.getElementById(id).classList.add('open'); };
+window.closeModal = id => { document.getElementById(id).classList.remove('open'); };
+
+// ── TOAST ─────────────────────────────────────────────────────────
+let toastTimer;
+window.toast = function(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show';
+  el.style.borderColor = type === 'success' ? 'var(--green-bdr)' : type === 'error' ? 'var(--red-bdr)' : 'var(--border2)';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+};
+
+// ── UTILS ─────────────────────────────────────────────────────────
+function setText(id, val) { const e = document.getElementById(id); if (e) e.textContent = val; }
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function cap(s) { return String(s||'').charAt(0).toUpperCase() + String(s||'').slice(1); }
+function fmtDate(ts) {
+  if (!ts) return '—';
+  return new Date(ts).toLocaleString('en-IN', { timeZone:'Asia/Kolkata', day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+}
+function statusIcon(s) { return { approved:'✅', pending:'⏳', blocked:'🚫' }[s] || '⏳'; }
+function notifTypeIcon(t) { return { update:'📦', announcement:'📣', payment:'💰', maintenance:'🔧', system:'🤖', custom:'💬' }[t] || '📢'; }
+function activityIcon(t) { return { approve:'✅', reject:'❌', block:'🚫', payment:'💰', notif:'📢' }[t] || '📋'; }
+function activityBg(t)   { return { approve:'var(--green-l)', reject:'var(--red-l)', block:'var(--red-l)', payment:'var(--blue-l)', notif:'var(--purple-l)' }[t] || 'var(--surface2)'; }
+
+// ── INIT ──────────────────────────────────────────────────────────
+// Allow Enter key on login
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('login-pass')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') window.doAdminLogin();
+  });
+});
+</script>
+</body>
+</html>
